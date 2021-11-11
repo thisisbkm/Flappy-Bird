@@ -149,9 +149,7 @@ def draw_window(win,bird,pipes,base,score):
 	score_label=START_FONT.render("Score: "+str(score),1,(255,255,255))
 	win.blit(score_label,(W_WID-score_label.get_width()-15,10))
 	pygame.display.update()
-def getMouseInput():
-	# return False
-	return pygame.mouse.get_pressed()[:1]
+
 def main_game():
 	global WIN 
 	win=WIN
