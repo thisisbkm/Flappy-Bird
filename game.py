@@ -7,10 +7,10 @@ from pygame.locals import *
 pygame.init()
 W_WID=600
 W_HEI=800
-BASE=730
+BASE=700
 START_FONT=pygame.font.SysFont("comicsans",50)
 
-WIN=pygame.display.set_mode(size=(700,900))
+WIN=pygame.display.set_mode(size=(700,800))
 pygame.display.set_caption("FLAPPY BIRD GAME")
 
 welcome_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","message.png")).convert_alpha())
