@@ -4,12 +4,14 @@ import sys
 import random
 import time
 from pygame.locals import *
-pygame.init()
+
+pygame.font.init()
+pygame.mixer.init()
+
 W_WID=600
 W_HEI=800
 BASE=700
 START_FONT=pygame.font.SysFont("comicsans",50)
-
 WIN=pygame.display.set_mode(size=(700,800))
 pygame.display.set_caption("FLAPPY BIRD GAME")
 
@@ -19,7 +21,14 @@ bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png")).c
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png"))) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
-SOUNDS={}#deepanshu add the sounds 
+
+SOUNDS={}
+SOUNDS['die']=pygame.mixer.Sound('audio/die.wav')
+SOUNDS['hit']=pygame.mixer.Sound('audio/hit.wav')
+SOUNDS['point']=pygame.mixer.Sound('audio/point.wav')
+SOUNDS['wing']=pygame.mixer.Sound('audio/wing.wav')
+SOUNDS['swoosh']=pygame.mixer.Sound('audio/swoosh.wav')
+
 class Bird:
 	ROTATION=25
 	IMGS=bird_images
@@ -43,9 +52,10 @@ class Bird:
 	def move(self):
 		self.tick_count +=1
 		displacement=self.vel*(self.tick_count)+0.5*(3)*(self.tick_count)**2
+		# displacement=5
 		#terminal velocity
 		if displacement>=16:
-			displacement=(displacement/abs(displacement))*16
+			displacement=16
 		if displacement <0:
 			displacement -=2
 		self.y=self.y+displacement
@@ -75,6 +85,7 @@ class Bird:
 	def get_mask(self):
 		return pygame.mask.from_surface(self.img)
 
+
 class Pipe():
 	GAP =250 
 	VEL=5
@@ -83,12 +94,12 @@ class Pipe():
 		self.height=0
 		self.top=0
 		self.bottom=0
+		self.passed=False
 		self.PIPE_TOP=pygame.transform.flip(pipe_img, False, True)
 		self.PIPE_BOTTOM=pipe_img
-		self.passed=False
 		self.set_height()
 	def set_height(self):
-		self.height=random.randrange(50,450)
+		self.height=random.randrange(80,450)
 		self.top=self.height-self.PIPE_TOP.get_height()
 		self.bottom=self.height+self.GAP
 	def move(self):
@@ -151,7 +162,7 @@ def draw_window(win,bird,pipes,base,score):
 	pygame.display.update()
 
 def main_game():
-	global WIN 
+	# global WIN 
 	win=WIN
 	bird=Bird(230,350)
 	base=Base(BASE)
@@ -217,15 +228,10 @@ def welcomeScreen():
 				win.blit(welcome_img,(180,150))
 				pygame.display.update()
 
-if __name__=='__main__':
-	SOUNDS['die']=pygame.mixer.Sound('audio/die.wav')
-	SOUNDS['hit']=pygame.mixer.Sound('audio/hit.wav')
-	SOUNDS['point']=pygame.mixer.Sound('audio/point.wav')
-	SOUNDS['wing']=pygame.mixer.Sound('audio/wing.wav')
-	SOUNDS['swoosh']=pygame.mixer.Sound('audio/swoosh.wav')
-	while True:
-		welcomeScreen()
-		main_game()
-		WIN.blit(game_over,(100,200))
-		pygame.display.update()
-		time.sleep(1)
+
+while True:
+	welcomeScreen()
+	main_game()
+	WIN.blit(game_over,(100,200))
+	pygame.display.update()
+	time.sleep(0.5)
