@@ -11,7 +11,7 @@ pygame.mixer.init()
 W_WID=600
 W_HEI=800
 BASE=700
-START_FONT=pygame.font.SysFont("comicsans",50)
+FONT=pygame.font.SysFont("comicsans",50)
 WIN=pygame.display.set_mode(size=(700,800))
 pygame.display.set_caption("FLAPPY BIRD GAME")
 
@@ -53,7 +53,7 @@ class Bird:
 		self.tick_count +=1
 		displacement=self.vel*(self.tick_count)+0.5*3*(self.tick_count)**2
 		# displacement=5
-		#terminal velocity
+		# terminal velocity
 		if displacement>=16:
 			displacement=16
 		if displacement <0:
@@ -111,8 +111,8 @@ class Pipe():
 		bird_mask=bird.get_mask()
 		top_mask=pygame.mask.from_surface(self.PIPE_TOP)
 		bottom_mask=pygame.mask.from_surface(self.PIPE_BOTTOM)
-		top_offset=(self.x-bird.x,self.top-round(bird.y))
-		bottom_offset=(self.x-bird.x,self.bottom-round(bird.y))
+		top_offset=(self.x-bird.x,self.top-bird.y)
+		bottom_offset=(self.x-bird.x,self.bottom-bird.y)
 		b_point=bird_mask.overlap(bottom_mask,bottom_offset)
 		t_point=bird_mask.overlap(top_mask,top_offset)
 		if b_point or t_point:
@@ -140,7 +140,7 @@ class Base:
 	def collide(self,bird):
 		bird_mask=bird.get_mask()
 		baseMask=pygame.mask.from_surface(self.IMG)
-		base_offset=(0-bird.x,self.y-round(bird.y))
+		base_offset=(0-bird.x,self.y-bird.y)
 		b_point=bird_mask.overlap(baseMask,base_offset)
 		if b_point:
 			return True
@@ -157,7 +157,7 @@ def draw_window(win,bird,pipes,base,score):
 		pipe.draw(win)
 	base.draw(win)
 	bird.draw(win)
-	score_label=START_FONT.render("Score: "+str(score),1,(255,255,255))
+	score_label=FONT.render("Score: "+str(score),1,(255,255,255))
 	win.blit(score_label,(W_WID-score_label.get_width()-15,10))
 	pygame.display.update()
 
@@ -198,7 +198,7 @@ def main_game():
 				return
 			if pipe.x+pipe.PIPE_TOP.get_width()<0:
 				rem.append(pipe)
-			if not pipe.passed and pipe.x<bird.x:
+			if not pipe.passed and pipe.x+30<bird.x:
 				pipe.passed=True
 				add_pipe=True
 		if add_pipe:
