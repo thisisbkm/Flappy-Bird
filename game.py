@@ -18,7 +18,7 @@ pygame.display.set_caption("FLAPPY BIRD GAME")
 welcome_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","message.png")).convert_alpha())
 pipe_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.png")).convert_alpha())
 bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png")).convert_alpha(),(700,800))
-bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png"))) for x in range(1,4)]
+bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png")).convert_alpha()) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
 
@@ -51,7 +51,7 @@ class Bird:
 		self.height= self.y
 	def move(self):
 		self.tick_count +=1
-		displacement=self.vel*(self.tick_count)+0.5*(3)*(self.tick_count)**2
+		displacement=self.vel*(self.tick_count)+0.5*3*(self.tick_count)**2
 		# displacement=5
 		#terminal velocity
 		if displacement>=16:
@@ -87,7 +87,7 @@ class Bird:
 
 
 class Pipe():
-	GAP =250 
+	GAP =220 
 	VEL=5
 	def __init__(self,x):
 		self.x=x
@@ -235,3 +235,4 @@ while True:
 	WIN.blit(game_over,(100,200))
 	pygame.display.update()
 	time.sleep(0.5)
+	
