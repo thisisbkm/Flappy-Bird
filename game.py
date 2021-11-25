@@ -11,7 +11,7 @@ pygame.mixer.init()
 W_WID=600
 W_HEI=800
 BASE=700
-FONT=pygame.font.SysFont("comicsans",50)
+FONT=pygame.font.SysFont("comicsans",30)
 WIN=pygame.display.set_mode(size=(700,800))
 pygame.display.set_caption("FLAPPY BIRD GAME")
 
@@ -21,14 +21,15 @@ bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png")).c
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png")).convert_alpha()) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
-
+coins_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","coin.png")).convert_alpha(),(30,30))
+lives=pygame.transform.scale(pygame.image.load(os.path.join("imgs","heart.png")).convert_alpha(),(20,20))
 SOUNDS={}
 SOUNDS['die']=pygame.mixer.Sound('audio/die.wav')
 SOUNDS['hit']=pygame.mixer.Sound('audio/hit.wav')
 SOUNDS['point']=pygame.mixer.Sound('audio/point.wav')
 SOUNDS['wing']=pygame.mixer.Sound('audio/wing.wav')
 SOUNDS['swoosh']=pygame.mixer.Sound('audio/swoosh.wav')
-
+lifeCounter=3
 class Bird:
 	ROTATION=25
 	IMGS=bird_images
@@ -87,7 +88,7 @@ class Bird:
 
 
 class Pipe():
-	GAP = 220
+	GAP = 250
 	def __init__(self,x,vel):
 		self.x=x
 		self.VEL=vel
@@ -172,17 +173,27 @@ def blitRotateCenter(win,image,topleft,angle):
 def draw_window(win,bimg,bird,pipes,base,score,level):
 	# win.blit(bg_img,(0,0))
 	bimg.draw(win)
-	for pipe in pipes:
+	for pipe in pipes: 
 		pipe.draw(win)
 	base.draw(win)
 	bird.draw(win)
+	life_label=FONT.render("Lives:",1,(255,255,255))
 	score_label=FONT.render("Score: "+str(score),1,(255,255,255))
 	level_label=FONT.render("Level: "+str(level),1,(255,255,255))
-	win.blit(score_label,(W_WID-score_label.get_width()+30,10))
+	win.blit(score_label,(W_WID-score_label.get_width()+40,10))
 	win.blit(level_label,(50,10))
+	win.blit(life_label,(250,10))
+	livesOfUser(win)
 	pygame.display.update()
-
+def livesOfUser(win):
+	global lifeCounter
+	xPos=340
+	for i in range(0,lifeCounter):
+		win.blit(lives,(xPos,25))
+		xPos+=50
+	# pygame.display.update()
 def main_game():
+	global lifeCounter
 	# global WIN 
 	win=WIN
 	pipeVelocity=5
@@ -193,10 +204,10 @@ def main_game():
 	score=0
 	level=1
 	clock=pygame.time.Clock() 
-	run=True
 	# time.sleep(3)
-	while run:
-		clock.tick(30) 
+	while True and lifeCounter!=0:
+		clock.tick(30)
+		# livesOfUser(win)
 		bird.move()
 		bimg.move()
 		for event in pygame.event.get():
@@ -209,18 +220,32 @@ def main_game():
 				bird.jump()
 		base.move()
 		if base.collide(bird) or bird.y<-5:
-			SOUNDS['die'].play()
-			print("your score is : ",score)
-			return
+			if(lifeCounter>0):
+				livesOfUser(win)
+				lifeCounter-=1
+				time.sleep(0.5)
+				main_game()
+			else:
+				SOUNDS['die'].play()
+				win.blit(game_over,(100,200))
+				pygame.display.update()
+				return
 		rem=[]
 		add_pipe=False
 
 		for pipe in pipes:
 			pipe.move()
 			if pipe.collide(bird):
-				SOUNDS['die'].play()
-				print("your score is : ",score)
-				return
+				if(lifeCounter>0):
+					lifeCounter-=1
+					livesOfUser(win)
+					time.sleep(0.5)
+					main_game()
+				else:
+					SOUNDS['die'].play()
+					win.blit(game_over,(100,200))
+					pygame.display.update()
+					return
 			if pipe.x+pipe.PIPE_TOP.get_width()<0:
 				rem.append(pipe)
 			if not pipe.passed and pipe.x+30<bird.x:
@@ -229,9 +254,10 @@ def main_game():
 		if add_pipe:
 			score+=1
 			if(score%5==0):
-				pipeVelocity+=2
-				base.VEL+=2
-				bimg.VEL+=2
+				pipes.pop(0)
+				pipeVelocity+=1
+				base.VEL+=1
+				bimg.VEL+=1
 				level+=1
 			SOUNDS['point'].play()
 			pipes.append(Pipe(W_WID+100,pipeVelocity))
@@ -262,7 +288,5 @@ def welcomeScreen():
 while True:
 	welcomeScreen()
 	main_game()
-	WIN.blit(game_over,(100,200))
-	pygame.display.update()
-	time.sleep(0.5)
-	
+	lifeCounter=3
+	time.sleep(1)
