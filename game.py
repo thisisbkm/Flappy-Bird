@@ -87,10 +87,10 @@ class Bird:
 
 
 class Pipe():
-	GAP =220 
-	VEL=5
-	def __init__(self,x):
+	GAP = 220
+	def __init__(self,x,vel):
 		self.x=x
+		self.VEL=vel
 		self.height=0
 		self.top=0
 		self.bottom=0
@@ -145,35 +145,60 @@ class Base:
 		if b_point:
 			return True
 		return False
+class BIMG:
+	VEL=5
+	WIDTH=bg_img.get_width()
+	IMG=bg_img
+	def __init__(self,x,y):
+		self.posX=x
+		self.posY=y
+		self.posX2=self.WIDTH
+	def move(self): 
+		self.posX-=self.VEL
+		self.posX2-=self.VEL 
+		if self.posX+self.WIDTH<0:
+			self.posX=self.posX2+self.WIDTH
+		if self.posX2+self.WIDTH<0:
+			self.posX2=self.posX+self.WIDTH
+	def draw(self,win):
+		win.blit(self.IMG,(self.posX,self.posY))
+		win.blit(self.IMG,(self.posX2,self.posY))
 
-def blitRotateCenter(surf,image,topleft,angle):
+def blitRotateCenter(win,image,topleft,angle):
 	rotated_image=pygame.transform.rotate(image, angle)
 	new_rect=rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
-	surf.blit(rotated_image,new_rect.topleft)
+	win.blit(rotated_image,new_rect.topleft)
 
-def draw_window(win,bird,pipes,base,score):
-	win.blit(bg_img,(0,0))
+def draw_window(win,bimg,bird,pipes,base,score,level):
+	# win.blit(bg_img,(0,0))
+	bimg.draw(win)
 	for pipe in pipes:
 		pipe.draw(win)
 	base.draw(win)
 	bird.draw(win)
 	score_label=FONT.render("Score: "+str(score),1,(255,255,255))
-	win.blit(score_label,(W_WID-score_label.get_width()-15,10))
+	level_label=FONT.render("Level: "+str(level),1,(255,255,255))
+	win.blit(score_label,(W_WID-score_label.get_width()+30,10))
+	win.blit(level_label,(50,10))
 	pygame.display.update()
 
 def main_game():
 	# global WIN 
 	win=WIN
+	pipeVelocity=5
+	bimg=BIMG(0,0)
 	bird=Bird(230,350)
 	base=Base(BASE)
-	pipes=[Pipe(1000)]
+	pipes=[Pipe(1000,pipeVelocity)]
 	score=0
+	level=1
 	clock=pygame.time.Clock() 
 	run=True
 	# time.sleep(3)
 	while run:
 		clock.tick(30) 
 		bird.move()
+		bimg.move()
 		for event in pygame.event.get():
 			if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE):
 				print("your score is : ",score)
@@ -203,11 +228,16 @@ def main_game():
 				add_pipe=True
 		if add_pipe:
 			score+=1
+			if(score%5==0):
+				pipeVelocity+=2
+				base.VEL+=2
+				bimg.VEL+=2
+				level+=1
 			SOUNDS['point'].play()
-			pipes.append(Pipe(W_WID+100))
+			pipes.append(Pipe(W_WID+100,pipeVelocity))
 		for r in rem:
 			pipes.remove(r)
-		draw_window(WIN,bird,pipes,base,score)
+		draw_window(WIN,bimg,bird,pipes,base,score,level)
 
 def welcomeScreen():
 	global WIN
