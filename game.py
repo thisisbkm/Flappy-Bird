@@ -12,12 +12,12 @@ W_WID=600
 W_HEI=800
 BASE=700
 FONT=pygame.font.SysFont("comicsans",30)
-WIN=pygame.display.set_mode(size=(700,800))
+WIN=pygame.display.set_mode(size=(700,800)) 
 pygame.display.set_caption("FLAPPY BIRD GAME")
 
 welcome_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","message.png")).convert_alpha())
 pipe_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.png")).convert_alpha())
-bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg1.jpg")).convert_alpha(),(700,800))
+bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg{0}.jpg".format(random.randrange(1,3)))).convert_alpha(),(700,800))
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png")).convert_alpha()) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
@@ -183,7 +183,7 @@ def blitRotateCenter(win,image,topleft,angle):
 def draw_window(win,bimg,bird,pipes,base,score,level):
 	# win.blit(bg_img,(0,0))
 	bimg.draw(win)
-	for pipe in pipes: 
+	for pipe in pipes:
 		pipe.draw(win)
 	base.draw(win)
 	bird.draw(win)
@@ -194,18 +194,23 @@ def draw_window(win,bimg,bird,pipes,base,score,level):
 	win.blit(level_label,(50,10))
 	win.blit(life_label,(250,10))
 	livesOfUser(win)
-	pygame.display.update()
+	# pygame.display.update()
 def livesOfUser(win):
 	global lifeCounter
 	xPos=340
 	for i in range(lifeCounter):
 		win.blit(lives,(xPos,25))
 		xPos+=50
-	# pygame.display.update()
+	pygame.display.update()
+	if(lifeCounter==0):
+		SOUNDS['music'].fadeout(100)
+		SOUNDS['death'].play()
+		time.sleep(1)
+		startGame()
 def main_game():
 	global lifeCounter
 	global score
-	# global WIN 
+	global WIN
 	win=WIN
 	pipeVelocity=5
 	bimg=BIMG(0,0)
@@ -214,10 +219,8 @@ def main_game():
 	pipes=[Pipe(1000,pipeVelocity)]
 	level=1
 	clock=pygame.time.Clock() 
-	# time.sleep(3)
 	while True:
 		clock.tick(30)
-		# livesOfUser(win)
 		bird.move()
 		bimg.move()
 		for event in pygame.event.get():
@@ -228,6 +231,7 @@ def main_game():
 			if event.type==KEYDOWN and (event.key==K_SPACE or event.key==K_UP):
 				SOUNDS['wing'].play()
 				bird.jump()
+
 		base.move()
 		if base.collide(bird) or bird.y<-5:
 			if(lifeCounter>0):
@@ -236,12 +240,6 @@ def main_game():
 				SOUNDS['die'].play()
 				time.sleep(0.5)
 				main_game()
-			if(lifeCounter==0):
-				livesOfUser(win)
-				pygame.display.update()
-				SOUNDS['music'].fadeout(100)
-				SOUNDS['death'].play()
-				return
 		rem=[]
 		add_pipe=False
 
@@ -254,12 +252,6 @@ def main_game():
 					SOUNDS['die'].play()
 					time.sleep(0.5)
 					main_game()
-				if(lifeCounter==0):
-					livesOfUser(win)
-					pygame.display.update()
-					SOUNDS['music'].fadeout(100)
-					SOUNDS['death'].play()
-					return
 			if pipe.x+pipe.PIPE_TOP.get_width()<0:
 				rem.append(pipe)
 			if not pipe.passed and pipe.x+30<bird.x:
@@ -282,7 +274,6 @@ def main_game():
 def welcomeScreen():
 	global WIN
 	win=WIN
-
 	while True:
 		for event in pygame.event.get():
 			if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE):
@@ -299,9 +290,11 @@ def welcomeScreen():
 				win.blit(welcome_img,(180,150))
 				pygame.display.update()
 
-
-while True:
-	welcomeScreen()
-	main_game()
+def startGame():
 	lifeCounter=3
-	time.sleep(2)
+	score=0
+	while True:
+		welcomeScreen()
+		main_game()
+		time.sleep(2)
+startGame()
