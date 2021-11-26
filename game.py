@@ -17,19 +17,29 @@ pygame.display.set_caption("FLAPPY BIRD GAME")
 
 welcome_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","message.png")).convert_alpha())
 pipe_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.png")).convert_alpha())
-bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png")).convert_alpha(),(700,800))
+bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg1.jpg")).convert_alpha(),(700,800))
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png")).convert_alpha()) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
 coins_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","coin.png")).convert_alpha(),(30,30))
 lives=pygame.transform.scale(pygame.image.load(os.path.join("imgs","heart.png")).convert_alpha(),(20,20))
 SOUNDS={}
+SOUNDS['music']=pygame.mixer.Sound('audio/music.mp3')
 SOUNDS['die']=pygame.mixer.Sound('audio/die.wav')
+SOUNDS['death']=pygame.mixer.Sound('audio/die1.wav')
 SOUNDS['hit']=pygame.mixer.Sound('audio/hit.wav')
 SOUNDS['point']=pygame.mixer.Sound('audio/point.wav')
 SOUNDS['wing']=pygame.mixer.Sound('audio/wing.wav')
 SOUNDS['swoosh']=pygame.mixer.Sound('audio/swoosh.wav')
+SOUNDS['death'].set_volume(0.1)
+SOUNDS['hit'].set_volume(0.1)
+SOUNDS['swoosh'].set_volume(0.4)
+SOUNDS['point'].set_volume(0.1)
+SOUNDS['die'].set_volume(0.1)
+SOUNDS['music'].set_volume(0.3)
+SOUNDS['wing'].set_volume(0.1)
 lifeCounter=3
+score=0
 class Bird:
 	ROTATION=25
 	IMGS=bird_images
@@ -188,12 +198,13 @@ def draw_window(win,bimg,bird,pipes,base,score,level):
 def livesOfUser(win):
 	global lifeCounter
 	xPos=340
-	for i in range(0,lifeCounter):
+	for i in range(lifeCounter):
 		win.blit(lives,(xPos,25))
 		xPos+=50
 	# pygame.display.update()
 def main_game():
 	global lifeCounter
+	global score
 	# global WIN 
 	win=WIN
 	pipeVelocity=5
@@ -201,11 +212,10 @@ def main_game():
 	bird=Bird(230,350)
 	base=Base(BASE)
 	pipes=[Pipe(1000,pipeVelocity)]
-	score=0
 	level=1
 	clock=pygame.time.Clock() 
 	# time.sleep(3)
-	while True and lifeCounter!=0:
+	while True:
 		clock.tick(30)
 		# livesOfUser(win)
 		bird.move()
@@ -221,14 +231,16 @@ def main_game():
 		base.move()
 		if base.collide(bird) or bird.y<-5:
 			if(lifeCounter>0):
-				livesOfUser(win)
 				lifeCounter-=1
+				# livesOfUser(win)
+				SOUNDS['die'].play()
 				time.sleep(0.5)
 				main_game()
-			else:
-				SOUNDS['die'].play()
-				win.blit(game_over,(100,200))
+			if(lifeCounter==0):
+				livesOfUser(win)
 				pygame.display.update()
+				SOUNDS['music'].fadeout(100)
+				SOUNDS['death'].play()
 				return
 		rem=[]
 		add_pipe=False
@@ -238,13 +250,15 @@ def main_game():
 			if pipe.collide(bird):
 				if(lifeCounter>0):
 					lifeCounter-=1
-					livesOfUser(win)
+					# livesOfUser(win)
+					SOUNDS['die'].play()
 					time.sleep(0.5)
 					main_game()
-				else:
-					SOUNDS['die'].play()
-					win.blit(game_over,(100,200))
+				if(lifeCounter==0):
+					livesOfUser(win)
 					pygame.display.update()
+					SOUNDS['music'].fadeout(100)
+					SOUNDS['death'].play()
 					return
 			if pipe.x+pipe.PIPE_TOP.get_width()<0:
 				rem.append(pipe)
@@ -275,6 +289,7 @@ def welcomeScreen():
 				pygame.quit()
 				sys.exit()
 			elif event.type==KEYDOWN and (event.key==K_SPACE or event.key==K_UP):
+				SOUNDS['music'].play(loops=-1,fade_ms=100)
 				SOUNDS['swoosh'].play()
 				return
 			else:
@@ -289,4 +304,4 @@ while True:
 	welcomeScreen()
 	main_game()
 	lifeCounter=3
-	time.sleep(1)
+	time.sleep(2)
