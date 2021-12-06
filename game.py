@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import pygame
 import os
 import sys
@@ -18,7 +19,7 @@ pygame.display.set_caption("FLAPPY BIRD GAME")
 welcome_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","message.png")).convert_alpha())
 pipe_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.png")).convert_alpha())
 bg_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg{0}.jpg".format(random.randrange(1,3)))).convert_alpha(),(700,800))
-bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png")).convert_alpha()) for x in range(1,4)]
+bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird"+str(x) + ".png")).convert_alpha()) for x in range(1,4)]
 base_img=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 game_over=pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","gameover.png")).convert_alpha())
 coins_img=pygame.transform.scale(pygame.image.load(os.path.join("imgs","coin.png")).convert_alpha(),(30,30))
@@ -156,6 +157,8 @@ class Base:
 		if b_point:
 			return True
 		return False
+class spikes:
+	pass
 class BIMG:
 	VEL=5
 	WIDTH=bg_img.get_width()
@@ -192,21 +195,19 @@ def draw_window(win,bimg,bird,pipes,base,score,level):
 	level_label=FONT.render("Level: "+str(level),1,(255,255,255))
 	win.blit(score_label,(W_WID-score_label.get_width()+40,10))
 	win.blit(level_label,(50,10))
-	win.blit(life_label,(250,10))
-	livesOfUser(win)
-	# pygame.display.update()
+	win.blit(life_label,(250,10))   
+	return livesOfUser(win)
 def livesOfUser(win):
 	global lifeCounter
 	xPos=340
 	for i in range(lifeCounter):
 		win.blit(lives,(xPos,25))
 		xPos+=50
-	pygame.display.update()
 	if(lifeCounter==0):
-		SOUNDS['music'].fadeout(100)
-		SOUNDS['death'].play()
-		time.sleep(1)
-		startGame()
+		pygame.display.update()
+		return True
+	pygame.display.update()
+	return False
 def main_game():
 	global lifeCounter
 	global score
@@ -269,8 +270,9 @@ def main_game():
 			pipes.append(Pipe(W_WID+100,pipeVelocity))
 		for r in rem:
 			pipes.remove(r)
-		draw_window(WIN,bimg,bird,pipes,base,score,level)
-
+		died=draw_window(WIN,bimg,bird,pipes,base,score,level)
+		if died:
+			return
 def welcomeScreen():
 	global WIN
 	win=WIN
@@ -291,10 +293,12 @@ def welcomeScreen():
 				pygame.display.update()
 
 def startGame():
-	lifeCounter=3
-	score=0
 	while True:
+		global lifeCounter,score
+		lifeCounter,score=3,0
 		welcomeScreen()
 		main_game()
-		time.sleep(2)
+		SOUNDS['music'].fadeout(100)
+		SOUNDS['death'].play()
+		time.sleep(1)
 startGame()
